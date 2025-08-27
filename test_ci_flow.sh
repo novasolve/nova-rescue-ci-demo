@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -22,6 +23,19 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
     echo "  export GITHUB_TOKEN=your_github_token"
     exit 1
 fi
+
+# Store the token temporarily for GitHub CLI operations
+TEMP_GITHUB_TOKEN="$GITHUB_TOKEN"
+
+# Unset GitHub tokens to simulate clean CI environment
+echo "🔒 Unsetting GitHub tokens for clean CI environment simulation..."
+unset GH_TOKEN || true
+unset GITHUB_TOKEN || true
+echo "✅ GitHub tokens unset"
+echo
+
+# Restore token for GitHub CLI operations in this script
+export GITHUB_TOKEN="$TEMP_GITHUB_TOKEN"
 
 # Phase 1: Check current CI status
 echo -e "${BLUE}📊 Phase 1: Checking current CI status${NC}"
@@ -134,3 +148,11 @@ echo "Next steps:"
 echo "1. Review Nova's fix PR when it's created"
 echo "2. Merge the fix PR to see tests pass"
 echo "3. Clean up test branches when done"
+
+# Final cleanup - unset tokens again
+echo
+echo "🔒 Final cleanup: Unsetting GitHub tokens..."
+unset GH_TOKEN || true
+unset GITHUB_TOKEN || true
+unset TEMP_GITHUB_TOKEN || true
+echo "✅ All tokens cleared"
