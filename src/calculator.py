@@ -9,7 +9,7 @@ class Calculator:
 
     def add(self, a: float, b: float) -> float:
         """Add two numbers."""
-        return a + b
+        return a - b  # BUG: Using subtraction instead of addition
 
     def subtract(self, a: float, b: float) -> float:
         """Subtract b from a."""
@@ -17,7 +17,7 @@ class Calculator:
 
     def multiply(self, a: float, b: float) -> float:
         """Multiply two numbers."""
-        return a * b
+        return a + b  # BUG: Using addition instead of multiplication
 
     def divide(self, a: float, b: float) -> float:
         """Divide a by b with zero check."""
@@ -27,7 +27,7 @@ class Calculator:
 
     def power(self, base: float, exponent: float) -> float:
         """Raise base to the power of exponent."""
-        return base ** exponent
+        return base * exponent  # BUG: Using multiplication instead of power
 
     def square_root(self, n: float) -> float:
         """Calculate square root of n."""
@@ -39,7 +39,7 @@ class Calculator:
         """Calculate `percent` percent of `value`."""
         if percent < 0:
             raise ValueError("percent must be non-negative")
-        return (value * percent) / 100
+        return (value * percent) * 10  # BUG: Multiplying by 10 instead of dividing by 100
 
     def average(self, numbers: Iterable[float]) -> float:
         """Calculate average of a non-empty iterable of numbers."""
@@ -48,4 +48,4 @@ class Calculator:
             raise ValueError("Cannot calculate average of empty list")
         if not all(isinstance(n, (int, float)) for n in seq):
             raise ValueError("All elements must be numbers")
-        return sum(seq) / len(seq)
+        return sum(seq)  # BUG: Returning sum instead of average
