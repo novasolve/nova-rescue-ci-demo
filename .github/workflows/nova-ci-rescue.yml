@@ -2,14 +2,15 @@ name: Nova CI-Rescue Demo
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch: # Allow manual triggering
 
 jobs:
   test-and-auto-fix:
     runs-on: ubuntu-latest
+    environment: Secrets
     permissions:
       contents: write # For pushing fixes
       pull-requests: write # For creating PRs
@@ -49,14 +50,13 @@ jobs:
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           # Use GPT-5 for main operations, GPT-4o for PR generation
           NOVA_DEFAULT_LLM_MODEL: gpt-5
-          NOVA_PR_LLM_MODEL: gpt-4o
+          NOVA_PR_LLM_MODEL: gpt-4.1
         run: |
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
-          nova fix . --max-iters 3 --timeout 300 --auto-pr
+          nova fix . --verbose
 
       - name: Run tests after fix
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
