@@ -62,7 +62,7 @@ jobs:
           NOVA_PR_LLM_MODEL: gpt-4.1
         run: |
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
-          nova fix . --verbose --ci
+          nova fix . --ci
 
       - name: Push Nova's fixes back to PR
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
