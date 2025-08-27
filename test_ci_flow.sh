@@ -16,7 +16,7 @@ echo -e "${BLUE}🚀 Nova CI-Rescue GitHub Actions Test${NC}"
 echo "======================================"
 echo
 
-# Check if we have the required environment variables
+# Check if we have the required environment variables before unsetting
 if [ -z "${GITHUB_TOKEN:-}" ]; then
     echo -e "${RED}❌ Error: GITHUB_TOKEN not set${NC}"
     echo "Please set your GitHub token first:"
@@ -24,18 +24,9 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
     exit 1
 fi
 
-# Store the token temporarily for GitHub CLI operations
-TEMP_GITHUB_TOKEN="$GITHUB_TOKEN"
-
-# Unset GitHub tokens to simulate clean CI environment
-echo "🔒 Unsetting GitHub tokens for clean CI environment simulation..."
+# Unset GH_TOKEN as requested (but keep GITHUB_TOKEN for gh CLI)
+echo "🔒 Unsetting GH_TOKEN as part of the flow (keeping GITHUB_TOKEN for GitHub CLI operations)"
 unset GH_TOKEN || true
-unset GITHUB_TOKEN || true
-echo "✅ GitHub tokens unset"
-echo
-
-# Restore token for GitHub CLI operations in this script
-export GITHUB_TOKEN="$TEMP_GITHUB_TOKEN"
 
 # Phase 1: Check current CI status
 echo -e "${BLUE}📊 Phase 1: Checking current CI status${NC}"
@@ -50,6 +41,14 @@ echo
 
 # Phase 3: Introduce bugs
 echo -e "${RED}🐛 Phase 3: Introducing bugs to trigger CI failure${NC}"
+
+# First restore calculator to clean state
+if [ -f "src/calculator.py.original" ]; then
+    echo "Restoring calculator.py to clean state..."
+    cp src/calculator.py.original src/calculator.py
+fi
+
+# Now introduce bugs
 ./introduce-bugs.sh
 echo
 
@@ -92,7 +91,7 @@ PR_URL=$(gh pr create \
 
 Watch the magic happen! 🎩✨" \
     --base main \
-    --head "$BRANCH_NAME")
+    --head "$BRANCH_NAME" 2>&1)
 
 echo "Pull request created: $PR_URL"
 echo
