@@ -1,0 +1,75 @@
+name: Nova CI-Rescue Demo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  test-and-auto-fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # For pushing fixes
+      pull-requests: write # For creating PRs
+      issues: write # For commenting on issues
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better diff generation
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-json-report
+
+      - name: Run initial tests
+        id: initial-tests
+        continue-on-error: true
+        run: |
+          echo "Running initial test suite..."
+          pytest tests/ -v --tb=short > test_results.txt 2>&1 || echo "TESTS_FAILED=true" >> $GITHUB_OUTPUT
+          cat test_results.txt
+
+      - name: Install Nova CI-Rescue if tests failed
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          echo "Installing Nova CI-Rescue..."
+          pip install git+https://github.com/novasolve/ci-auto-rescue.git@demo
+
+      - name: Run Nova Auto-Fix if tests failed
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use GPT-5 for main operations, GPT-4o for PR generation
+          NOVA_DEFAULT_LLM_MODEL: gpt-5
+          NOVA_PR_LLM_MODEL: gpt-4o
+        run: |
+          echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
+          nova fix . --max-iters 3 --timeout 300 --auto-pr
+
+      - name: Run tests after fix
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          echo "Running tests after Nova fix..."
+          pytest tests/ -v
+
+      - name: Upload Nova artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nova-artifacts
+          path: |
+            telemetry/
+            *.log
+          retention-days: 7
