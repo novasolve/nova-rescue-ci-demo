@@ -61,8 +61,11 @@ Nova CI-Rescue's ability to automatically fix failing tests.
 
 Bugs introduced:
 - add() now subtracts
-- multiply() now adds
+- subtract() now adds
+- multiply() now adds  
+- divide() now multiplies
 - power() now multiplies
+- square_root() returns input value
 - percentage() calculation is wrong
 - average() returns sum instead of average"
 
@@ -83,8 +86,11 @@ PR_URL=$(gh pr create \
 
 ## Bugs introduced:
 - \`add()\` now subtracts instead of adding
+- \`subtract()\` now adds instead of subtracting  
 - \`multiply()\` now adds instead of multiplying
+- \`divide()\` now multiplies instead of dividing
 - \`power()\` now multiplies instead of exponentiating
+- \`square_root()\` returns input instead of square root
 - \`percentage()\` multiplies by 10 instead of dividing by 100
 - \`average()\` returns sum instead of average
 
