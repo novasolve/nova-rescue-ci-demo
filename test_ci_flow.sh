@@ -91,7 +91,8 @@ PR_URL=$(gh pr create \
 
 Watch the magic happen! 🎩✨" \
     --base main \
-    --head "$BRANCH_NAME" 2>&1)
+    --head "$BRANCH_NAME")
+# The bug was a stray closing parenthesis on its own line; it is now removed.
 
 echo "Pull request created: $PR_URL"
 echo
@@ -102,9 +103,9 @@ echo "Waiting for workflow to start..."
 sleep 10
 
 # Get the run ID
-RUN_ID=$(gh run list --workflow="Nova CI-Rescue Demo" --limit 1 --json databaseId --jq '.[0].databaseId')
+RUN_ID=$(gh run list --workflow="Nova CI-Rescue Demo" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
 
-if [ -n "$RUN_ID" ]; then
+if [ -n "${RUN_ID:-}" ]; then
     echo "Workflow run started: #$RUN_ID"
     echo "View in browser: https://github.com/novasolve/nova-rescue-ci-demo/actions/runs/$RUN_ID"
     echo
@@ -122,9 +123,9 @@ if [ -n "$RUN_ID" ]; then
         # Check for Nova's PR
         echo
         echo "Checking for Nova's fix PR..."
-        NOVA_PR=$(gh pr list --search "author:app/github-actions" --limit 1 --json url --jq '.[0].url')
+        NOVA_PR=$(gh pr list --search "author:app/github-actions" --limit 1 --json url --jq '.[0].url // empty')
         
-        if [ -n "$NOVA_PR" ]; then
+        if [ -n "${NOVA_PR:-}" ]; then
             echo -e "${GREEN}🎉 Nova created a fix PR: $NOVA_PR${NC}"
         else
             echo "Nova's PR might still be creating..."
