@@ -32,34 +32,12 @@ echo
 
 echo -e "${RED}🐛 Phase 3: Introducing bugs to trigger CI failure${NC}"
 
-echo -e "🔄 Restoring original calculator.py..."
-if [ -f "src/calculator.py.original" ]; then
-    cp src/calculator.py.original src/calculator.py
-    echo -e "✅ Restored from src/calculator.py.original"
+# Use the clean bug introduction script
+if [ -f "./introduce-bugs-clean.sh" ]; then
+    bash ./introduce-bugs-clean.sh
 else
-    echo -e "⚠️  No original file found, assuming current file is correct"
-fi
-
-echo -e "🐛 Introducing bugs into calculator.py..."
-
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  sed -i '' 's/return a + b/return a - b/' src/calculator.py
-  sed -i '' 's/return a - b/return a + b/' src/calculator.py
-  sed -i '' 's/return a \* b/return a + b/' src/calculator.py
-  sed -i '' 's/return a \/ b/return a * b/' src/calculator.py
-  sed -i '' 's/return base \*\* exponent/return base * exponent/' src/calculator.py
-  sed -i '' 's/return math\.sqrt(n)/return n/' src/calculator.py
-  sed -i '' 's/return (value \* percent) \/ 100/return (value * percent) * 10/' src/calculator.py
-  sed -i '' 's/return sum(seq) \/ len(seq)/return sum(seq)/' src/calculator.py
-else
-  sed -i 's/return a + b/return a - b/' src/calculator.py
-  sed -i 's/return a - b/return a + b/' src/calculator.py
-  sed -i 's/return a \* b/return a + b/' src/calculator.py
-  sed -i 's/return a \/ b/return a * b/' src/calculator.py
-  sed -i 's/return base \*\* exponent/return base * exponent/' src/calculator.py
-  sed -i 's/return math\.sqrt(n)/return n/' src/calculator.py
-  sed -i 's/return (value \* percent) \/ 100/return (value * percent) * 10/' src/calculator.py
-  sed -i 's/return sum(seq) \/ len(seq)/return sum(seq)/' src/calculator.py
+    echo -e "${RED}❌ Error: introduce-bugs-clean.sh not found${NC}"
+    exit 1
 fi
 echo
 
