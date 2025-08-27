@@ -64,6 +64,18 @@ jobs:
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
           nova fix . --verbose --ci
 
+      - name: Push Nova's fixes back to PR
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          # Check if Nova made any changes
+          if [ -n "$(git status --porcelain)" ] || [ -n "$(git diff HEAD^ HEAD --name-only 2>/dev/null)" ]; then
+            echo "Nova made changes, pushing to PR..."
+            git push origin HEAD:${{ github.head_ref }}
+            echo "✅ Pushed Nova's fixes to PR"
+          else
+            echo "No changes to push"
+          fi
+
       - name: Run tests after fix
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         run: |
@@ -78,5 +90,7 @@ jobs:
           path: |
             .nova/
             *.log
+            nova-*.log
+            telemetry/
           retention-days: 7
           if-no-files-found: ignore
