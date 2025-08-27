@@ -17,7 +17,7 @@ class Calculator:
 
     def multiply(self, a: float, b: float) -> float:
         """Multiply two numbers."""
-        return a + b  # BUG: Using addition instead of multiplication
+        return a - b  # BUG: Using subtraction instead of addition  # BUG: Using addition instead of multiplication
 
     def divide(self, a: float, b: float) -> float:
         """Divide a by b with zero check."""
