@@ -2,10 +2,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Nova CI Flow Test Script
-# This script tests the GitHub Actions CI workflow
-
-# Colors
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -16,7 +12,6 @@ echo -e "${BLUE}🚀 Nova CI-Rescue GitHub Actions Test${NC}"
 echo "======================================"
 echo
 
-# Check if we have the required environment variables before unsetting
 if [ -z "${GITHUB_TOKEN:-}" ]; then
     echo -e "${RED}❌ Error: GITHUB_TOKEN not set${NC}"
     echo "Please set your GitHub token first:"
@@ -24,34 +19,44 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
     exit 1
 fi
 
-# Unset GH_TOKEN as requested (but keep GITHUB_TOKEN for gh CLI)
 unset GH_TOKEN || true
 
-# Phase 1: Check current CI status
 echo -e "${BLUE}📊 Phase 1: Checking current CI status${NC}"
 gh run list --workflow="Nova CI-Rescue Demo" --limit 5 || echo "No previous runs found"
 echo
 
-# Phase 2: Create a test branch
 BRANCH_NAME="test-nova-ci-$(date +%Y%m%d-%H%M%S)"
 echo -e "${YELLOW}🌿 Phase 2: Creating test branch: $BRANCH_NAME${NC}"
 git checkout -b "$BRANCH_NAME"
 echo
 
-# Phase 3: Introduce bugs
 echo -e "${RED}🐛 Phase 3: Introducing bugs to trigger CI failure${NC}"
 
-# First restore calculator to clean state
 if [ -f "src/calculator.py.original" ]; then
-    echo "Restoring calculator.py to clean state..."
     cp src/calculator.py.original src/calculator.py
 fi
 
-# Now introduce bugs
-./introduce-bugs.sh
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  sed -i '' 's/return a + b/return a - b/' src/calculator.py
+  sed -i '' 's/return a - b/return a + b/' src/calculator.py
+  sed -i '' 's/return a \* b/return a + b/' src/calculator.py
+  sed -i '' 's/return a \/ b/return a * b/' src/calculator.py
+  sed -i '' 's/return base \*\* exponent/return base * exponent/' src/calculator.py
+  sed -i '' 's/return math\.sqrt(n)/return n/' src/calculator.py
+  sed -i '' 's/return (value \* percent) \/ 100/return (value * percent) * 10/' src/calculator.py
+  sed -i '' 's/return sum(seq) \/ len(seq)/return sum(seq)/' src/calculator.py
+else
+  sed -i 's/return a + b/return a - b/' src/calculator.py
+  sed -i 's/return a - b/return a + b/' src/calculator.py
+  sed -i 's/return a \* b/return a + b/' src/calculator.py
+  sed -i 's/return a \/ b/return a * b/' src/calculator.py
+  sed -i 's/return base \*\* exponent/return base * exponent/' src/calculator.py
+  sed -i 's/return math\.sqrt(n)/return n/' src/calculator.py
+  sed -i 's/return (value \* percent) \/ 100/return (value * percent) * 10/' src/calculator.py
+  sed -i 's/return sum(seq) \/ len(seq)/return sum(seq)/' src/calculator.py
+fi
 echo
 
-# Phase 4: Commit and push to trigger CI
 echo -e "${BLUE}📤 Phase 4: Pushing changes to trigger GitHub Actions${NC}"
 git add src/calculator.py
 git commit -m "Test Nova CI-Rescue: Introduce calculator bugs
@@ -72,7 +77,6 @@ Bugs introduced:
 git push origin "$BRANCH_NAME"
 echo
 
-# Phase 5: Create PR to trigger workflow
 echo -e "${BLUE}🔄 Phase 5: Creating pull request${NC}"
 PR_URL=$(gh pr create \
     --title "Test Nova CI-Rescue: Calculator bugs" \
@@ -97,17 +101,14 @@ PR_URL=$(gh pr create \
 Watch the magic happen! 🎩✨" \
     --base main \
     --head "$BRANCH_NAME")
-# The bug was a stray closing parenthesis on its own line; it is now removed.
 
 echo "Pull request created: $PR_URL"
 echo
 
-# Phase 6: Monitor CI workflow
 echo -e "${BLUE}👀 Phase 6: Monitoring GitHub Actions workflow${NC}"
 echo "Waiting for workflow to start..."
 sleep 10
 
-# Get the run ID
 RUN_ID=$(gh run list --workflow="Nova CI-Rescue Demo" --limit 1 --json databaseId --jq '.[0].databaseId // empty')
 
 if [ -n "${RUN_ID:-}" ]; then
@@ -115,34 +116,22 @@ if [ -n "${RUN_ID:-}" ]; then
     echo "View in browser: https://github.com/novasolve/nova-rescue-ci-demo/actions/runs/$RUN_ID"
     echo
     echo "Following workflow progress..."
-    
-    # Follow the workflow (this will stream logs)
     gh run watch "$RUN_ID" --interval 5
-    
-    # Get final status
     STATUS=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion')
-    
-    # Download complete logs
     echo
     echo "📥 Downloading workflow logs..."
     LOG_FILE="nova-ci-logs-${RUN_ID}-$(date +%Y%m%d-%H%M%S).zip"
     if gh run download "$RUN_ID" --dir "logs-$RUN_ID" 2>/dev/null; then
         echo "✅ Artifacts downloaded to logs-$RUN_ID/"
     fi
-    
-    # Also download the full text logs
     if gh run view "$RUN_ID" --log > "workflow-log-$RUN_ID.txt" 2>/dev/null; then
         echo "✅ Complete workflow log saved to workflow-log-$RUN_ID.txt"
     fi
-    
     if [ "$STATUS" = "success" ]; then
         echo -e "${GREEN}✅ Workflow completed successfully!${NC}"
-        
-        # Check for Nova's PR
         echo
         echo "Checking for Nova's fix PR..."
         NOVA_PR=$(gh pr list --search "author:app/github-actions" --limit 1 --json url --jq '.[0].url // empty')
-        
         if [ -n "${NOVA_PR:-}" ]; then
             echo -e "${GREEN}🎉 Nova created a fix PR: $NOVA_PR${NC}"
         else
@@ -171,7 +160,6 @@ echo "1. Review Nova's fix PR when it's created"
 echo "2. Merge the fix PR to see tests pass"
 echo "3. Clean up test branches when done"
 
-# Final cleanup - unset tokens again
 echo
 echo "🔒 Final cleanup: Unsetting GitHub tokens..."
 unset GH_TOKEN || true
