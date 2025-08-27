@@ -64,14 +64,44 @@ jobs:
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
           nova fix . --ci
 
+      - name: Remove BUG comments from fixed code
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          # Check if Nova made any changes first
+          if [ -n "$(git diff --name-only)" ]; then
+            echo "Nova made changes, checking for BUG comments..."
+            
+            # More aggressive BUG comment removal
+            echo "Removing any BUG comments from fixed code..."
+            # Remove full lines that contain only BUG comments
+            find src -name "*.py" -exec sed -i '/^\s*# BUG:/d' {} + 2>/dev/null || true
+            # Remove inline BUG comments while preserving the code
+            find src -name "*.py" -exec sed -i 's/\s*# BUG:.*$//' {} + 2>/dev/null || true
+            # Remove any variations of BUG comments
+            find src -name "*.py" -exec sed -i 's/\s*#\s*BUG:.*$//' {} + 2>/dev/null || true
+            # Also handle case variations
+            find src -name "*.py" -exec sed -i 's/\s*# [Bb][Uu][Gg]:.*$//' {} + 2>/dev/null || true
+            
+            # Check if we removed any comments
+            if [ -n "$(git diff --name-only)" ]; then
+              echo "BUG comments removed"
+              git add -A
+              git commit -m "Remove BUG comments from Nova fixes" || true
+            else
+              echo "No BUG comments found to remove"
+            fi
+          else
+            echo "Nova didn't make any changes, skipping BUG comment removal"
+          fi
+
       - name: Push Nova's fixes back to PR
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         run: |
-          # Check if Nova made any changes
+          # Check if Nova made any changes or if we removed BUG comments
           if [ -n "$(git status --porcelain)" ] || [ -n "$(git diff HEAD^ HEAD --name-only 2>/dev/null)" ]; then
-            echo "Nova made changes, pushing to PR..."
+            echo "Changes detected, pushing to PR..."
             git push origin HEAD:${{ github.head_ref }}
-            echo "✅ Pushed Nova's fixes to PR"
+            echo "✅ Pushed Nova's fixes (without BUG comments) to PR"
           else
             echo "No changes to push"
           fi
