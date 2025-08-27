@@ -25,7 +25,6 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
 fi
 
 # Unset GH_TOKEN as requested (but keep GITHUB_TOKEN for gh CLI)
-echo "🔒 Unsetting GH_TOKEN as part of the flow (keeping GITHUB_TOKEN for GitHub CLI operations)"
 unset GH_TOKEN || true
 
 # Phase 1: Check current CI status
@@ -117,6 +116,19 @@ if [ -n "${RUN_ID:-}" ]; then
     # Get final status
     STATUS=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion')
     
+    # Download complete logs
+    echo
+    echo "📥 Downloading workflow logs..."
+    LOG_FILE="nova-ci-logs-${RUN_ID}-$(date +%Y%m%d-%H%M%S).zip"
+    if gh run download "$RUN_ID" --dir "logs-$RUN_ID" 2>/dev/null; then
+        echo "✅ Artifacts downloaded to logs-$RUN_ID/"
+    fi
+    
+    # Also download the full text logs
+    if gh run view "$RUN_ID" --log > "workflow-log-$RUN_ID.txt" 2>/dev/null; then
+        echo "✅ Complete workflow log saved to workflow-log-$RUN_ID.txt"
+    fi
+    
     if [ "$STATUS" = "success" ]; then
         echo -e "${GREEN}✅ Workflow completed successfully!${NC}"
         
@@ -143,6 +155,10 @@ echo -e "${BLUE}📋 Summary:${NC}"
 echo "- Test branch: $BRANCH_NAME"
 echo "- Pull request: $PR_URL"
 echo "- Workflow: https://github.com/novasolve/nova-rescue-ci-demo/actions"
+if [ -n "${RUN_ID:-}" ]; then
+    echo "- Workflow logs: workflow-log-$RUN_ID.txt"
+    echo "- Artifacts: logs-$RUN_ID/"
+fi
 echo
 echo "Next steps:"
 echo "1. Review Nova's fix PR when it's created"

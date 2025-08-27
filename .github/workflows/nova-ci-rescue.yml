@@ -46,17 +46,23 @@ jobs:
           echo "Installing Nova CI-Rescue..."
           pip install git+https://github.com/novasolve/ci-auto-rescue.git@demo
 
+      - name: Configure Git for commits
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions (Nova CI-Rescue)"
+
       - name: Run Nova Auto-Fix if tests failed
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           # Use GPT-5 for main operations, GPT-4o for PR generation
           NOVA_DEFAULT_LLM_MODEL: gpt-5
           NOVA_PR_LLM_MODEL: gpt-4.1
         run: |
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
-          nova fix . --verbose
+          nova fix . --verbose --ci
 
       - name: Run tests after fix
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
@@ -70,6 +76,7 @@ jobs:
         with:
           name: nova-artifacts
           path: |
-            telemetry/
+            .nova/
             *.log
           retention-days: 7
+          if-no-files-found: ignore
