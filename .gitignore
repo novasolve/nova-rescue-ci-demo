@@ -1,3 +1,7 @@
 .venv/
 venv/
 .venv/bin/Activate.ps1
+# Workflow logs and artifacts
+workflow-log-*.txt
+logs-*/
+nova-ci-logs-*.zip
