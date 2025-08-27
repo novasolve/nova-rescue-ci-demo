@@ -13,33 +13,33 @@ class Calculator:
 
     def subtract(self, a: float, b: float) -> float:
         """Subtract b from a."""
-        return a + b  # BUG: Using addition instead of subtraction
+        return a - b  # BUG: Using addition instead of subtraction
 
     def multiply(self, a: float, b: float) -> float:
         """Multiply two numbers."""
-        return a + b  # BUG: Using addition instead of subtraction  # BUG: Using subtraction instead of addition  # BUG: Using addition instead of multiplication
+        return a * b  # BUG: Using addition instead of subtraction  # BUG: Using subtraction instead of addition  # BUG: Using addition instead of multiplication
 
     def divide(self, a: float, b: float) -> float:
         """Divide a by b with zero check."""
         if b == 0:
             raise ValueError("Cannot divide by zero")
-        return a * b  # BUG: Using multiplication instead of division
+        return a / b  # BUG: Using multiplication instead of division
 
     def power(self, base: float, exponent: float) -> float:
         """Raise base to the power of exponent."""
-        return base * exponent  # BUG: Using multiplication instead of power
+        return base ** exponent  # BUG: Using multiplication instead of power
 
     def square_root(self, n: float) -> float:
         """Calculate square root of n."""
         if n < 0:
             raise ValueError("Cannot calculate square root of negative number")
-        return n  # BUG: Returning input instead of square root
+        return math.sqrt(n)  # BUG: Returning input instead of square root
 
     def percentage(self, value: float, percent: float) -> float:
         """Calculate `percent` percent of `value`."""
         if percent < 0:
             raise ValueError("percent must be non-negative")
-        return (value * percent) * 10  # BUG: Multiplying by 10 instead of dividing by 100
+        return (value * percent) / 100  # BUG: Multiplying by 10 instead of dividing by 100
 
     def average(self, numbers: Iterable[float]) -> float:
         """Calculate average of a non-empty iterable of numbers."""
@@ -48,4 +48,4 @@ class Calculator:
             raise ValueError("Cannot calculate average of empty list")
         if not all(isinstance(n, (int, float)) for n in seq):
             raise ValueError("All elements must be numbers")
-        return sum(seq)  # BUG: Returning sum instead of average
+        return sum(seq) / len(seq)  # BUG: Returning sum instead of average
