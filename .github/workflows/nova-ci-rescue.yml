@@ -52,16 +52,26 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions (Nova CI-Rescue)"
 
+      - name: Setup Nova environment
+        if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
+        run: |
+          # Set model names from secrets or use defaults
+          echo "NOVA_DEFAULT_LLM_MODEL=${{ secrets.NOVA_DEFAULT_LLM_MODEL || 'gpt-4o' }}" >> $GITHUB_ENV
+          echo "NOVA_PR_LLM_MODEL=${{ secrets.NOVA_PR_LLM_MODEL || 'gpt-4o' }}" >> $GITHUB_ENV
+          echo "NOVA_RUN_DEMOS=${{ secrets.NOVA_RUN_DEMOS || 'both' }}" >> $GITHUB_ENV
+
       - name: Run Nova Auto-Fix if tests failed
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          # Use GPT-5 for main operations, GPT-4o for PR generation
-          NOVA_DEFAULT_LLM_MODEL: gpt-5
-          NOVA_PR_LLM_MODEL: gpt-4.1
+          NOVA_DEFAULT_LLM_MODEL: ${{ env.NOVA_DEFAULT_LLM_MODEL }}
+          NOVA_PR_LLM_MODEL: ${{ env.NOVA_PR_LLM_MODEL }}
+          NOVA_RUN_DEMOS: ${{ env.NOVA_RUN_DEMOS }}
         run: |
           echo "Tests failed! Running Nova CI-Rescue to auto-fix..."
+          echo "Using models: Default=${NOVA_DEFAULT_LLM_MODEL}, PR=${NOVA_PR_LLM_MODEL}"
+          echo "Running demos: ${NOVA_RUN_DEMOS}"
           nova fix . --ci
 
       - name: Remove BUG comments from fixed code

@@ -32,11 +32,17 @@ echo
 
 echo -e "${RED}🐛 Phase 3: Introducing bugs to trigger CI failure${NC}"
 
-# Use the clean bug introduction script
-if [ -f "./introduce-bugs-clean.sh" ]; then
-    bash ./introduce-bugs-clean.sh
+# First restore original if it exists
+if [ -f "src/calculator.py.original" ]; then
+    cp src/calculator.py.original src/calculator.py
+    echo -e "✅ Restored original calculator.py"
+fi
+
+# Use the standard bug introduction script (no comments)
+if [ -f "./introduce-bugs.sh" ]; then
+    bash ./introduce-bugs.sh
 else
-    echo -e "${RED}❌ Error: introduce-bugs-clean.sh not found${NC}"
+    echo -e "${RED}❌ Error: introduce-bugs.sh not found${NC}"
     exit 1
 fi
 echo
