@@ -32,9 +32,15 @@ echo
 
 echo -e "${RED}🐛 Phase 3: Introducing bugs to trigger CI failure${NC}"
 
+echo -e "🔄 Restoring original calculator.py..."
 if [ -f "src/calculator.py.original" ]; then
     cp src/calculator.py.original src/calculator.py
+    echo -e "✅ Restored from src/calculator.py.original"
+else
+    echo -e "⚠️  No original file found, assuming current file is correct"
 fi
+
+echo -e "🐛 Introducing bugs into calculator.py..."
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   sed -i '' 's/return a + b/return a - b/' src/calculator.py
