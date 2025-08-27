@@ -60,6 +60,12 @@ class TestCalculator:
         assert calc.percentage(50, 50) == 25
         assert calc.percentage(200, 10) == 20
 
+    def test_square_root(self, calc):
+        """Test square root operation."""
+        assert calc.square_root(9) == 3
+        assert calc.square_root(16) == 4
+        assert calc.square_root(0) == 0
+
     def test_average(self, calc):
         """Test average calculation."""
         assert calc.average([1, 2, 3, 4, 5]) == 3
