@@ -2,6 +2,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Change to script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 # Prefer gh keyring over env tokens for auth
 unset GH_TOKEN
 unset GITHUB_TOKEN
