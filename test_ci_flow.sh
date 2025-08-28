@@ -75,14 +75,22 @@ echo -e "${BLUE}🚀 Nova CI-Rescue GitHub Actions Test${NC}"
 echo "======================================"
 echo
 
-if [ -z "${GITHUB_TOKEN:-}" ]; then
-    echo -e "${RED}❌ Error: GITHUB_TOKEN not set${NC}"
-    echo "Please set your GitHub token first:"
-    echo "  export GITHUB_TOKEN=your_github_token"
-    exit 1
+# Check GitHub authentication
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+    echo -e "${GREEN}✓ Using GITHUB_TOKEN for authentication${NC}"
+    export GH_TOKEN="${GITHUB_TOKEN}"
+else
+    # Check if gh is already authenticated
+    if gh auth status >/dev/null 2>&1; then
+        echo -e "${GREEN}✓ Using existing gh CLI authentication${NC}"
+    else
+        echo -e "${RED}❌ Error: No GitHub authentication found${NC}"
+        echo "Please either:"
+        echo "  1. Set GITHUB_TOKEN: export GITHUB_TOKEN=your_github_token"
+        echo "  2. Login with gh: gh auth login"
+        exit 1
+    fi
 fi
-
-unset GH_TOKEN || true
 
 echo -e "${BLUE}📊 Phase 1: Checking current CI status${NC}"
 gh run list --workflow="Nova CI-Rescue Demo" --limit 5 || echo "No previous runs found"

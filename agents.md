@@ -1,72 +1,114 @@
-# Nova CI‑Rescue Demo CI Flow (Quick Guide)
+# Nova CI-Rescue GitHub Actions Demo
 
-This repo demonstrates a full CI loop that keeps a known‑good base branch green and opens a "dirty" PR on top to trigger Nova CI‑Rescue.
+This repository demonstrates Nova CI-Rescue integration with GitHub Actions for automated test fixing in CI/CD pipelines.
 
-## Baseline policy
+## 🚀 Quick Start
 
-- **Base branch**: `demo/latest` (kept on top of `main`).
-- **Installer source**: GitHub `novasolve/nova-ci-rescue@demo/latest` (not PyPI).
-- **Dirty PRs**: Always created on top of `demo/latest`.
+### Prerequisites
 
-## Prerequisites
+- Completed main demo in `../nova-ci-rescue-demo/`
+- GitHub account with repository access
+- `gh` CLI installed and authenticated
+- OpenAI API key
 
-- GitHub CLI (`gh`) authenticated: `gh auth login`
-- `GITHUB_TOKEN` exported in your shell (repo write scope):
+### Setup
 
 ```bash
-export GITHUB_TOKEN=ghp_xxx
+# Ensure you're in this directory
+cd ~/demo/nova-rescue-ci-demo-github/
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Set environment variables
+export OPENAI_API_KEY="sk-..."
+export GITHUB_TOKEN="ghp_..."  # Or use gh auth login
 ```
 
-- Python 3.10+ if you want to verify tests locally.
+## 📋 Demo Scripts
 
-## What the scripts do
-
-### `setup_nova.sh`
-
-- Creates `.venv`, upgrades `pip`.
-- Installs Nova from: `novasolve/nova-ci-rescue@demo/latest`.
-  - Ensures CLI supports flags like `--pytest-args`.
-
-### `test_ci_flow.sh`
-
-1. Syncs `origin/demo/latest` locally and resets to it.
-2. Creates a fresh branch from `origin/demo/latest`.
-3. Verifies base tests are green (protect base from “dirty on red”).
-4. Introduces calculator bugs (via `introduce-bugs.sh`).
-5. Ensures a diff exists (forces a tiny change if sed yields no diff).
-6. Pushes the branch and opens a PR with base `demo/latest`.
-7. Follows the GitHub Action, downloads logs/artifacts.
-
-## Usage
-
-- Full GitHub flow:
+### 1. **test_ci_flow.sh** - Main CI Demo
 
 ```bash
-export GITHUB_TOKEN=ghp_xxx
 bash test_ci_flow.sh
 ```
 
-- Ensuring CI uses the correct Nova build: already wired by `setup_nova.sh` to `novasolve/nova-ci-rescue@demo/latest`.
+- Creates a test branch
+- Introduces bugs
+- Pushes to trigger GitHub Actions
+- Nova automatically fixes tests in CI
 
-## Keeping `demo/latest` on top of `main`
-
-- Fast‑forward `demo/latest` to `main` when needed:
+### 2. **test_local_demo.sh** - Local Testing
 
 ```bash
-git fetch origin
-MAIN_SHA=$(git rev-parse origin/main)
-git push --force-with-lease origin "$MAIN_SHA":refs/heads/demo/latest
+bash test_local_demo.sh
 ```
 
-- Our scripts assume `origin/demo/latest` exists and is green.
+- Test the flow locally before pushing
+- Verify Nova fixes work as expected
 
-## Troubleshooting
+### 3. **introduce-bugs.sh** - Bug Introduction
 
-- “No such option: --pytest-args”: you’re on an old build. Ensure install points to `novasolve/nova-ci-rescue@demo/latest`.
-- “working tree clean” on push: script forces a trivial change if sed yields no diff.
-- Base tests failing: script aborts to avoid dirtying a red base; fix base then retry.
+```bash
+bash introduce-bugs.sh
+```
 
-## Notes
+- Introduces specific bugs for testing
+- Used by other scripts
 
-- PR base is `demo/latest` by default (not `main`).
-- Change `BASE_REF` in `test_ci_flow.sh` to use a different base.
+## 🔧 GitHub Actions Workflow
+
+The workflow (`.github/workflows/nova-ci-rescue.yml`) automatically:
+
+1. Detects failing tests in PRs
+2. Runs Nova to generate fixes
+3. Commits fixes back to the PR
+4. Re-runs tests to verify
+
+## 📁 Repository Structure
+
+```
+nova-rescue-ci-demo-github/
+├── .github/
+│   └── workflows/
+│       └── nova-ci-rescue.yml    # GitHub Actions workflow
+├── src/
+│   └── calculator.py             # Code to be fixed
+├── tests/
+│   └── test_calculator.py        # Test suite
+├── test_ci_flow.sh              # Main demo script
+├── introduce-bugs.sh            # Bug introduction
+└── requirements.txt             # Dependencies
+```
+
+## 🚨 Common Issues
+
+### Authentication
+
+```bash
+# If gh auth fails
+unset GITHUB_TOKEN
+unset GH_TOKEN
+gh auth login
+```
+
+### Workflow Permissions
+
+Ensure your repository has:
+
+- Actions enabled
+- Workflow permissions to write
+
+## 🎯 Next Steps
+
+1. Fork this repository
+2. Enable GitHub Actions
+3. Add `OPENAI_API_KEY` to repository secrets
+4. Create a PR with failing tests
+5. Watch Nova fix them automatically!
+
+## 🔗 Related
+
+- **Main Demo**: See `../nova-ci-rescue-demo/agents.md`
+- **Nova Core**: [ci-auto-rescue](https://github.com/novasolve/ci-auto-rescue)
+- **GitHub Repo**: [nova-rescue-ci-demo](https://github.com/novasolve/nova-rescue-ci-demo)
