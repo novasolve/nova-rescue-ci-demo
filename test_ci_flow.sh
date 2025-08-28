@@ -110,6 +110,13 @@ switch_to_branch "${BASE_REF}"
 git fetch origin "${BASE_REF}" >/dev/null 2>&1 || true
 git pull --ff-only origin "${BASE_REF}" >/dev/null 2>&1 || true
 
+# Activate venv if available
+if [ -f .venv/bin/activate ]; then
+    source .venv/bin/activate
+elif [ -f venv/bin/activate ]; then
+    source venv/bin/activate
+fi
+
 # Verify base tests are green
 echo -e "${GREEN}✅ Verifying base branch tests are green...${NC}"
 if ! python -m pytest tests/ -q; then
