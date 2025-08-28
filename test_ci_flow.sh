@@ -89,7 +89,7 @@ PR_URL=$(gh pr create \
 - \`average()\` returns sum instead of average
 
 Watch the magic happen! 🎩✨" \
-    --base main \
+    --base demo/latest \
     --head "$BRANCH_NAME")
 
 echo "Pull request created: $PR_URL"
