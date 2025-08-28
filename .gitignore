@@ -5,3 +5,10 @@ venv/
 workflow-log-*.txt
 logs-*/
 nova-ci-logs-*.zip
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
