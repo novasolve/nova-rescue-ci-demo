@@ -2,6 +2,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Prefer gh keyring over env tokens for auth
+unset GH_TOKEN
+unset GITHUB_TOKEN
+
+
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
