@@ -7,6 +7,69 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+# Branch preference functions
+get_default_branch() {
+    local def
+    def=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||') || true
+    if [ -z "$def" ]; then
+        if git ls-remote --exit-code --heads origin main >/dev/null 2>&1; then
+            def=main
+        elif git ls-remote --exit-code --heads origin master >/dev/null 2>&1; then
+            def=master
+        else
+            def=main
+        fi
+    fi
+    echo "$def"
+}
+
+get_preferred_branch() {
+    if git show-ref --verify --quiet refs/heads/demo/latest; then
+        echo "demo/latest"
+        return
+    fi
+    if git ls-remote --exit-code --heads origin demo/latest >/dev/null 2>&1; then
+        echo "demo/latest"
+        return
+    fi
+    if git show-ref --verify --quiet refs/heads/demo/20250828; then
+        echo "demo/20250828"
+        return
+    fi
+    if git ls-remote --exit-code --heads origin demo/20250828 >/dev/null 2>&1; then
+        echo "demo/20250828"
+        return
+    fi
+    echo "$(get_default_branch)"
+}
+
+switch_to_branch() {
+    local target="$1"
+    # If only remote exists, create local tracking branch
+    if ! git show-ref --verify --quiet "refs/heads/${target}"; then
+        if git ls-remote --exit-code --heads origin "$target" >/dev/null 2>&1; then
+            git checkout -B "$target" "origin/${target}" >/dev/null 2>&1 || git switch -c "$target" --track "origin/${target}" >/dev/null 2>&1 || true
+        else
+            # Fallback: create from default branch
+            local def
+            def=$(get_default_branch)
+            git checkout -B "$target" "$def" >/dev/null 2>&1 || git switch -C "$target" "$def" >/dev/null 2>&1 || true
+        fi
+    else
+        git checkout "$target" >/dev/null 2>&1 || git switch "$target" >/dev/null 2>&1 || true
+    fi
+}
+
+# Get preferred branch and set up exit trap
+PREFERRED_BRANCH="$(get_preferred_branch)"
+
+on_exit() {
+    # Always return to preferred branch even if demo created a temp branch
+    switch_to_branch "$PREFERRED_BRANCH"
+}
+
+trap on_exit EXIT
+
 echo -e "${BLUE}🚀 Nova CI-Rescue GitHub Actions Test (Clean Version)${NC}"
 echo "================================================="
 echo
@@ -23,6 +86,15 @@ unset GH_TOKEN || true
 echo -e "${BLUE}📊 Phase 1: Checking current CI status${NC}"
 gh run list --workflow="Nova CI-Rescue Demo" --limit 5 || echo "No previous runs found"
 echo
+
+# Use preferred branch
+BASE_REF="${PREFERRED_BRANCH}"
+
+# Sync with origin branch
+echo -e "${BLUE}🔄 Starting from branch: ${BASE_REF}${NC}"
+switch_to_branch "${BASE_REF}"
+git fetch origin "${BASE_REF}" >/dev/null 2>&1 || true
+git pull --ff-only origin "${BASE_REF}" >/dev/null 2>&1 || true
 
 BRANCH_NAME="test-nova-ci-$(date +%Y%m%d-%H%M%S)"
 echo -e "${YELLOW}🌿 Phase 2: Creating test branch: $BRANCH_NAME${NC}"
@@ -82,7 +154,7 @@ PR_URL=$(gh pr create \
 - \`average()\` returns sum instead of average
 
 Watch the magic happen! 🎩✨" \
-    --base demo/latest \
+    --base "${BASE_REF}" \
     --head "$BRANCH_NAME")
 
 echo "Pull request created: $PR_URL"
