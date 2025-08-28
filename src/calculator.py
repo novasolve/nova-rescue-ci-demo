@@ -23,7 +23,7 @@ class Calculator:
         """Divide a by b with zero check."""
         if b == 0:
             raise ValueError("Cannot divide by zero")
-        return a * b
+        return a + b
 
     def power(self, base: float, exponent: float) -> float:
         """Raise base to the power of exponent."""
