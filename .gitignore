@@ -1,7 +1,50 @@
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Packaging / build
+build/
+dist/
+.eggs/
+*.egg-info/
+*.egg
+
+# Virtual environments
 .venv/
 venv/
-.venv/bin/Activate.ps1
-# Workflow logs and artifacts
-workflow-log-*.txt
+env/
+ENV/
+
+# Editors/IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs / telemetry / artifacts
+telemetry/
 logs-*/
-nova-ci-logs-*.zip
+workflow-log-*.txt
+*.log
+
+# Test outputs
+.testmondata
+coverage.xml
+htmlcov/
+.test_results/
+**/test_results.json
+test_results.json
+
+# Node (if any)
+node_modules/
+
+# Local env files
+.env
+.env.*
