@@ -1,8 +1,6 @@
 name: Nova CI-Rescue Demo
 
 on:
-  push:
-    branches: [main, demo/latest]
   pull_request:
     branches: [main, demo/latest]
   workflow_dispatch: # Allow manual triggering
