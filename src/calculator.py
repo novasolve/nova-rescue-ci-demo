@@ -36,7 +36,11 @@ class Calculator:
         return math.sqrt(n)
 
     def percentage(self, value: float, percent: float) -> float:
-        """Calculate `percent` percent of `value`."""
+        """Calculate `percent` percent of `value`.
+
+        Raises:
+            ValueError: If `percent` is negative.
+        """
         if percent < 0:
             raise ValueError("percent must be non-negative")
         return (value * percent) / 100
@@ -46,6 +50,4 @@ class Calculator:
         seq = list(numbers)
         if not seq:
             raise ValueError("Cannot calculate average of empty list")
-        if not all(isinstance(n, (int, float)) for n in seq):
-            raise ValueError("All elements must be numbers")
         return sum(seq) / len(seq)
