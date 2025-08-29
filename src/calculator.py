@@ -36,10 +36,14 @@ class Calculator:
         return math.sqrt(n)
 
     def percentage(self, value: float, percent: float) -> float:
-        """Calculate `percent` percent of `value`."""
+        """Calculate `percent` percent of `value`.
+
+        Raises:
+            ValueError: If `percent` is negative.
+        """
         if percent < 0:
             raise ValueError("percent must be non-negative")
-        return (value * percent) / 100
+        return value * (percent / 100)
 
     def average(self, numbers: Iterable[float]) -> float:
         """Calculate average of a non-empty iterable of numbers."""
