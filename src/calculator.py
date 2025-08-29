@@ -3,7 +3,6 @@
 import math
 from typing import Iterable
 
-
 class Calculator:
     """Basic calculator with common operations."""
 
@@ -33,13 +32,13 @@ class Calculator:
         """Calculate square root of n."""
         if n < 0:
             raise ValueError("Cannot calculate square root of negative number")
-        return math.sqrt(n)
+        return n ** 0.5
 
     def percentage(self, value: float, percent: float) -> float:
         """Calculate `percent` percent of `value`."""
         if percent < 0:
             raise ValueError("percent must be non-negative")
-        return (value * percent) / 100
+        return value * (percent / 100)
 
     def average(self, numbers: Iterable[float]) -> float:
         """Calculate average of a non-empty iterable of numbers."""
