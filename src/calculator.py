@@ -3,7 +3,6 @@
 import math
 from typing import Iterable
 
-
 class Calculator:
     """Basic calculator with common operations."""
 
