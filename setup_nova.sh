@@ -46,12 +46,14 @@ pip install --quiet pytest pytest-json-report
 # Uninstall any existing nova first to ensure clean install
 pip uninstall -y nova nova-ci-rescue 2>/dev/null || true
 
-# Install/upgrade Nova from demo branch (force reinstall, no cache)
+# Install/upgrade Nova from GitHub demo/latest branch (force reinstall, no cache)
 echo "Installing Nova CI-Rescue..."
 if [ -n "${CI:-}" ]; then
-  pip install --quiet --force-reinstall --no-cache-dir "git+https://github.com/novasolve/ci-auto-rescue.git@demo"
+  pip install --quiet --force-reinstall --no-cache-dir \
+    "git+https://github.com/novasolve/nova-ci-rescue.git@demo/latest"
 else
-  pip install --force-reinstall --no-cache-dir "git+https://github.com/novasolve/ci-auto-rescue.git@demo"
+  pip install --force-reinstall --no-cache-dir \
+    "git+https://github.com/novasolve/nova-ci-rescue.git@demo/latest"
 fi
 
 # Show nova version

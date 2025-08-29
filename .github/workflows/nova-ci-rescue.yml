@@ -44,7 +44,7 @@ jobs:
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
         run: |
           echo "Installing Nova CI-Rescue..."
-          pip install --no-cache-dir --force-reinstall git+https://github.com/novasolve/nova-ci-rescue.git@demo/latest
+          pip install --no-cache-dir --force-reinstall git+https://github.com/novasolve/ci-auto-rescue.git@demo/latest
 
       - name: Configure Git for commits
         if: steps.initial-tests.outputs.TESTS_FAILED == 'true'
